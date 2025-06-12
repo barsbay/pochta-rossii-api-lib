@@ -18,7 +18,7 @@ export class PochtaRossiiApi {
     this.client = axios.create({
       baseURL: this.baseUrl,
       auth: {
-        username: config.token,
+        username: `AccessToken ${config.token}`,
         password: config.key
       },
       headers: {
