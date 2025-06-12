@@ -1,0 +1,10 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "readme": "README.md",
+  "name": "pochta-rossii-api-lib"
+} 

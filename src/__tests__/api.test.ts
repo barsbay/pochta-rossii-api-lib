@@ -9,11 +9,21 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
  */
 describe('PochtaRossiiApi', () => {
   let api: PochtaRossiiApi;
+  let mockAxiosInstance: any;
 
   /**
    * Setup before each test
    */
   beforeEach(() => {
+    mockAxiosInstance = {
+      put: jest.fn(),
+      post: jest.fn(),
+      get: jest.fn(),
+      delete: jest.fn()
+    };
+
+    mockedAxios.create.mockReturnValue(mockAxiosInstance);
+
     api = new PochtaRossiiApi({
       token: 'test-token',
       key: 'test-key'
@@ -45,12 +55,11 @@ describe('PochtaRossiiApi', () => {
         houseTo: '1'
       };
 
-      mockedAxios.create.mockReturnValue({
-        put: jest.fn().mockResolvedValue({ data: [mockOrder] })
-      } as any);
+      mockAxiosInstance.put.mockResolvedValue({ data: [mockOrder] });
 
       const result = await api.createOrder(mockOrder);
       expect(result).toEqual(mockOrder);
+      expect(mockAxiosInstance.put).toHaveBeenCalledWith('/1.0/user/backlog', [mockOrder]);
     });
   });
 
@@ -85,12 +94,11 @@ describe('PochtaRossiiApi', () => {
         totalVat: 60
       };
 
-      mockedAxios.create.mockReturnValue({
-        post: jest.fn().mockResolvedValue({ data: mockTariffResponse })
-      } as any);
+      mockAxiosInstance.post.mockResolvedValue({ data: mockTariffResponse });
 
       const result = await api.calculateTariff(mockTariffRequest);
       expect(result).toEqual(mockTariffResponse);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/1.0/tariff', mockTariffRequest);
     });
   });
 
@@ -124,12 +132,11 @@ describe('PochtaRossiiApi', () => {
         }
       };
 
-      mockedAxios.create.mockReturnValue({
-        post: jest.fn().mockResolvedValue({ data: [mockResponse] })
-      } as any);
+      mockAxiosInstance.post.mockResolvedValue({ data: [mockResponse] });
 
       const result = await api.normalizeAddress(mockRequest);
       expect(result).toEqual(mockResponse);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/1.0/clean/address', [mockRequest]);
     });
   });
 }); 

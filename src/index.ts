@@ -1,5 +1,16 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { PochtaRossiiConfig, Order, TariffRequest, TariffResponse, NormalizationRequest, NormalizationResponse, Batch, ApiError } from './types';
+
+class PochtaRossiiApiError extends Error {
+  public status?: number;
+  public data?: any;
+  constructor(message: string, status?: number, data?: any) {
+    super(message);
+    this.name = 'PochtaRossiiApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
 
 /**
  * Main class for interacting with Russian Post API
@@ -27,14 +38,54 @@ export class PochtaRossiiApi {
     });
   }
 
+  private handleError(error: any) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const data = error.response?.data;
+      const apiMessage = data?.errorCodes?.[0]?.description || error.message;
+      throw new PochtaRossiiApiError(`API Error: ${apiMessage}`, status, data);
+    }
+    throw new PochtaRossiiApiError(error.message);
+  }
+
+  private validateOrder(order: Order) {
+    if (!order.orderNum || !order.givenName || !order.mailCategory || !order.mailType || !order.mass || !order.recipientName || !order.strIndexTo || !order.telAddress || !order.indexTo || !order.regionTo || !order.placeTo || !order.streetTo || !order.houseTo) {
+      throw new PochtaRossiiApiError('Order validation failed: required fields are missing');
+    }
+  }
+
+  private validateTariffRequest(request: TariffRequest) {
+    if (!request.indexFrom || !request.indexTo || !request.mailCategory || !request.mailType || !request.mass) {
+      throw new PochtaRossiiApiError('TariffRequest validation failed: required fields are missing');
+    }
+  }
+
+  private validateNormalizationRequest(request: NormalizationRequest) {
+    if (!request.id || (!request.originalAddress && !request.originalFio && !request.originalPhone)) {
+      throw new PochtaRossiiApiError('NormalizationRequest validation failed: id and at least one field (originalAddress, originalFio, originalPhone) are required');
+    }
+  }
+
+  private validateBatch(batch: Batch) {
+    if (!batch.batchName || !batch.sendingDate || !batch.shipmentPointIndex) {
+      throw new PochtaRossiiApiError('Batch validation failed: required fields are missing');
+    }
+  }
+
   /**
    * Creates a new order
    * @param {Order} order - Order details
    * @returns {Promise<Order>} Created order
    */
   async createOrder(order: Order): Promise<Order> {
-    const response = await this.client.put('/1.0/user/backlog', [order]);
-    return response.data[0];
+    this.validateOrder(order);
+    try {
+      const response = await this.client.put('/1.0/user/backlog', [order]);
+      return response.data[0];
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -42,8 +93,13 @@ export class PochtaRossiiApi {
    * @returns {Promise<Order[]>} Array of orders
    */
   async getOrders(): Promise<Order[]> {
-    const response = await this.client.get('/1.0/backlog');
-    return response.data;
+    try {
+      const response = await this.client.get('/1.0/backlog');
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -52,8 +108,13 @@ export class PochtaRossiiApi {
    * @returns {Promise<Order>} Order details
    */
   async getOrderById(orderId: string): Promise<Order> {
-    const response = await this.client.get(`/1.0/backlog/${orderId}`);
-    return response.data;
+    try {
+      const response = await this.client.get(`/1.0/backlog/${orderId}`);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -62,7 +123,11 @@ export class PochtaRossiiApi {
    * @returns {Promise<void>}
    */
   async deleteOrder(orderId: string): Promise<void> {
-    await this.client.delete(`/1.0/backlog/${orderId}`);
+    try {
+      await this.client.delete(`/1.0/backlog/${orderId}`);
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   /**
@@ -71,8 +136,14 @@ export class PochtaRossiiApi {
    * @returns {Promise<Batch>} Created batch
    */
   async createBatch(batch: Batch): Promise<Batch> {
-    const response = await this.client.post('/1.0/user/shipment', batch);
-    return response.data;
+    this.validateBatch(batch);
+    try {
+      const response = await this.client.post('/1.0/user/shipment', batch);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -80,8 +151,13 @@ export class PochtaRossiiApi {
    * @returns {Promise<Batch[]>} Array of batches
    */
   async getBatches(): Promise<Batch[]> {
-    const response = await this.client.get('/1.0/shipment');
-    return response.data;
+    try {
+      const response = await this.client.get('/1.0/shipment');
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -90,8 +166,13 @@ export class PochtaRossiiApi {
    * @returns {Promise<Batch[]>} Array of matching batches
    */
   async searchBatchByName(batchName: string): Promise<Batch[]> {
-    const response = await this.client.get(`/1.0/shipment/search?query=${batchName}`);
-    return response.data;
+    try {
+      const response = await this.client.get(`/1.0/shipment/search?query=${batchName}`);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -101,7 +182,11 @@ export class PochtaRossiiApi {
    * @returns {Promise<void>}
    */
   async updateBatchSendingDate(batchId: string, sendingDate: string): Promise<void> {
-    await this.client.post(`/1.0/shipment/${batchId}/sending-date`, { sendingDate });
+    try {
+      await this.client.post(`/1.0/shipment/${batchId}/sending-date`, { sendingDate });
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   /**
@@ -111,7 +196,11 @@ export class PochtaRossiiApi {
    * @returns {Promise<void>}
    */
   async addOrdersToBatch(batchId: string, orderIds: string[]): Promise<void> {
-    await this.client.post(`/1.0/shipment/${batchId}/orders`, orderIds);
+    try {
+      await this.client.post(`/1.0/shipment/${batchId}/orders`, orderIds);
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   /**
@@ -120,8 +209,13 @@ export class PochtaRossiiApi {
    * @returns {Promise<Order[]>} Array of orders in batch
    */
   async getBatchOrders(batchId: string): Promise<Order[]> {
-    const response = await this.client.get(`/1.0/shipment/${batchId}/orders`);
-    return response.data;
+    try {
+      const response = await this.client.get(`/1.0/shipment/${batchId}/orders`);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -131,7 +225,11 @@ export class PochtaRossiiApi {
    * @returns {Promise<void>}
    */
   async removeOrdersFromBatch(batchId: string, orderIds: string[]): Promise<void> {
-    await this.client.delete(`/1.0/shipment/${batchId}/orders`, { data: orderIds });
+    try {
+      await this.client.delete(`/1.0/shipment/${batchId}/orders`, { data: orderIds });
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   /**
@@ -140,8 +238,14 @@ export class PochtaRossiiApi {
    * @returns {Promise<TariffResponse>} Calculated tariff details
    */
   async calculateTariff(request: TariffRequest): Promise<TariffResponse> {
-    const response = await this.client.post('/1.0/tariff', request);
-    return response.data;
+    this.validateTariffRequest(request);
+    try {
+      const response = await this.client.post('/1.0/tariff', request);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -150,8 +254,14 @@ export class PochtaRossiiApi {
    * @returns {Promise<NormalizationResponse>} Normalized address details
    */
   async normalizeAddress(request: NormalizationRequest): Promise<NormalizationResponse> {
-    const response = await this.client.post('/1.0/clean/address', [request]);
-    return response.data[0];
+    this.validateNormalizationRequest(request);
+    try {
+      const response = await this.client.post('/1.0/clean/address', [request]);
+      return response.data[0];
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -160,8 +270,14 @@ export class PochtaRossiiApi {
    * @returns {Promise<NormalizationResponse>} Normalized FIO details
    */
   async normalizeFio(request: NormalizationRequest): Promise<NormalizationResponse> {
-    const response = await this.client.post('/1.0/clean/fio', [request]);
-    return response.data[0];
+    this.validateNormalizationRequest(request);
+    try {
+      const response = await this.client.post('/1.0/clean/fio', [request]);
+      return response.data[0];
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -170,8 +286,14 @@ export class PochtaRossiiApi {
    * @returns {Promise<NormalizationResponse>} Normalized phone details
    */
   async normalizePhone(request: NormalizationRequest): Promise<NormalizationResponse> {
-    const response = await this.client.post('/1.0/clean/phone', [request]);
-    return response.data[0];
+    this.validateNormalizationRequest(request);
+    try {
+      const response = await this.client.post('/1.0/clean/phone', [request]);
+      return response.data[0];
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -180,10 +302,15 @@ export class PochtaRossiiApi {
    * @returns {Promise<Buffer>} ZIP archive with all documents
    */
   async generateDocuments(batchId: string): Promise<Buffer> {
-    const response = await this.client.get(`/1.0/forms/${batchId}/zip-all`, {
-      responseType: 'arraybuffer'
-    });
-    return Buffer.from(response.data);
+    try {
+      const response = await this.client.get(`/1.0/forms/${batchId}/zip-all`, {
+        responseType: 'arraybuffer'
+      });
+      return Buffer.from(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -193,10 +320,15 @@ export class PochtaRossiiApi {
    * @returns {Promise<Buffer>} Generated form as PDF
    */
   async generateF103(batchId: string, printType: 'PAPER' | 'ELECTRONIC' = 'PAPER'): Promise<Buffer> {
-    const response = await this.client.get(`/1.0/forms/${batchId}/f103?print-type=${printType}`, {
-      responseType: 'arraybuffer'
-    });
-    return Buffer.from(response.data);
+    try {
+      const response = await this.client.get(`/1.0/forms/${batchId}/f103?print-type=${printType}`, {
+        responseType: 'arraybuffer'
+      });
+      return Buffer.from(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -205,10 +337,15 @@ export class PochtaRossiiApi {
    * @returns {Promise<Buffer>} Generated form as PDF
    */
   async generateF7p(batchId: string): Promise<Buffer> {
-    const response = await this.client.get(`/1.0/forms/${batchId}/f7p`, {
-      responseType: 'arraybuffer'
-    });
-    return Buffer.from(response.data);
+    try {
+      const response = await this.client.get(`/1.0/forms/${batchId}/f7p`, {
+        responseType: 'arraybuffer'
+      });
+      return Buffer.from(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 
   /**
@@ -217,10 +354,15 @@ export class PochtaRossiiApi {
    * @returns {Promise<Buffer>} Generated form as PDF
    */
   async generateF112(batchId: string): Promise<Buffer> {
-    const response = await this.client.get(`/1.0/forms/${batchId}/f112`, {
-      responseType: 'arraybuffer'
-    });
-    return Buffer.from(response.data);
+    try {
+      const response = await this.client.get(`/1.0/forms/${batchId}/f112`, {
+        responseType: 'arraybuffer'
+      });
+      return Buffer.from(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 }
 

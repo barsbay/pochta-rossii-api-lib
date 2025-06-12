@@ -1,6 +1,21 @@
 # Russian Post API Library
 
-A TypeScript library for interacting with the Russian Post API (otpravka.pochta.ru). This library provides a simple and type-safe way to work with the Russian Post delivery service.
+[![npm version](https://img.shields.io/npm/v/pochta-rossii-api-lib.svg)](https://www.npmjs.com/package/pochta-rossii-api-lib)
+[![GitHub stars](https://img.shields.io/github/stars/barsbay/pochta-rossii-api-lib.svg?style=social)](https://github.com/barsbay/pochta-rossii-api-lib)
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+> **Security Notice:**
+> Never publish your real API tokens or keys in public repositories, code examples, or documentation. Always use placeholders like `YOUR_TOKEN` and `YOUR_KEY`.
+
+A TypeScript library for interacting with the [Russian Post API (otpravka.pochta.ru)](https://otpravka.pochta.ru/). This library provides a simple and type-safe way to work with the Russian Post delivery service.
+
+- **Repository:** [github.com/barsbay/pochta-rossii-api-lib](https://github.com/barsbay/pochta-rossii-api-lib)
+- **NPM:** [npmjs.com/package/pochta-rossii-api-lib](https://www.npmjs.com/package/pochta-rossii-api-lib)
+- **Issues:** [github.com/barsbay/pochta-rossii-api-lib/issues](https://github.com/barsbay/pochta-rossii-api-lib/issues)
+- **License:** MIT
+- **Author:** barsbay
+
+---
 
 ## Features
 
