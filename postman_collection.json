@@ -1,0 +1,656 @@
+{
+  "info": {
+    "name": "Почта России API - Сервис Отправка",
+    "description": "Коллекция API для работы с сервисом отправки посылок Почты России (otpravka.pochta.ru)\n\nДля работы с API необходимо:\n1. Зарегистрироваться на https://otpravka.pochta.ru/\n2. Получить токен авторизации\n3. Сгенерировать ключ авторизации\n\nБазовый URL: https://otpravka-api.pochta.ru",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{token}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{key}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://otpravka-api.pochta.ru",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "YOUR_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "key",
+      "value": "YOUR_KEY_HERE",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Авторизация",
+      "description": "Методы для работы с авторизацией",
+      "item": [
+        {
+          "name": "Получение токена приложения",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/user/token",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "user", "token"]
+            },
+            "description": "Получение токена авторизации приложения"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказы",
+      "description": "Методы для работы с заказами",
+      "item": [
+        {
+          "name": "Создание заказа",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"address-type-to\": \"DEFAULT\",\n    \"given-name\": \"Иван\",\n    \"mail-category\": \"ORDINARY\",\n    \"mail-type\": \"POSTAL_PARCEL\",\n    \"mass\": 1000,\n    \"order-num\": \"12345\",\n    \"recipient-name\": \"Иванов Иван Иванович\",\n    \"str-index-to\": \"101000\",\n    \"tel-address\": \"+79001234567\",\n    \"index-to\": 101000,\n    \"region-to\": \"Москва\",\n    \"area-to\": \"\",\n    \"place-to\": \"Москва\",\n    \"location-to\": \"\",\n    \"street-to\": \"Красная площадь\",\n    \"house-to\": \"1\",\n    \"room-to\": \"\",\n    \"corpus-to\": \"\",\n    \"building-to\": \"\",\n    \"hotel-to\": \"\",\n    \"num-address-type-to\": \"\",\n    \"wo-mail-rank\": true\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/user/backlog",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "user", "backlog"]
+            },
+            "description": "Создание нового заказа в системе"
+          }
+        },
+        {
+          "name": "Получение заказов",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/backlog",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "backlog"]
+            },
+            "description": "Получение списка заказов из отложенных"
+          }
+        },
+        {
+          "name": "Поиск заказа по ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/backlog/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "backlog", "{{order_id}}"]
+            },
+            "description": "Получение информации о заказе по его ID"
+          }
+        },
+        {
+          "name": "Удаление заказа",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/backlog/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "backlog", "{{order_id}}"]
+            },
+            "description": "Удаление заказа из отложенных"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Партии",
+      "description": "Методы для работы с партиями заказов",
+      "item": [
+        {
+          "name": "Создание партии из заказов",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batch-name\": \"Партия №1\",\n  \"sending-date\": \"2024-01-15\",\n  \"shipment-point-index\": \"101000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/user/shipment",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "user", "shipment"]
+            },
+            "description": "Создание новой партии из заказов"
+          }
+        },
+        {
+          "name": "Получение списка партий",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/shipment",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "shipment"]
+            },
+            "description": "Получение списка всех партий"
+          }
+        },
+        {
+          "name": "Поиск партии по названию",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/shipment/search?query={{batch_name}}",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "shipment", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "{{batch_name}}"
+                }
+              ]
+            },
+            "description": "Поиск партии по наименованию"
+          }
+        },
+        {
+          "name": "Изменение даты отправки партии",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sending-date\": \"2024-01-20\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/shipment/{{batch_id}}/sending-date",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "shipment", "{{batch_id}}", "sending-date"]
+            },
+            "description": "Изменение дня отправки в почтовое отделение"
+          }
+        },
+        {
+          "name": "Добавление заказов в партию",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[12345, 12346, 12347]"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/shipment/{{batch_id}}/orders",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "shipment", "{{batch_id}}", "orders"]
+            },
+            "description": "Добавление заказов в партию"
+          }
+        },
+        {
+          "name": "Получение заказов в партии",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/shipment/{{batch_id}}/orders",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "shipment", "{{batch_id}}", "orders"]
+            },
+            "description": "Получение данных о заказах в партии"
+          }
+        },
+        {
+          "name": "Удаление заказов из партии",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[12345, 12346]"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/shipment/{{batch_id}}/orders",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "shipment", "{{batch_id}}", "orders"]
+            },
+            "description": "Удаление заказов из партии"
+          }
+        },
+        {
+          "name": "Поиск заказов с ШПИ",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/shipment/{{batch_id}}/checkin",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "shipment", "{{batch_id}}", "checkin"]
+            },
+            "description": "Поиск заказов с ШПИ в партии"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Документы",
+      "description": "Методы для генерации документов",
+      "item": [
+        {
+          "name": "Генерация пакета документации",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/forms/{{batch_id}}/zip-all",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "forms", "{{batch_id}}", "zip-all"]
+            },
+            "description": "Генерация пакета документации для партии"
+          }
+        },
+        {
+          "name": "Генерация формы Ф103",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/forms/{{batch_id}}/f103?print-type=PAPER",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "forms", "{{batch_id}}", "f103"],
+              "query": [
+                {
+                  "key": "print-type",
+                  "value": "PAPER"
+                }
+              ]
+            },
+            "description": "Генерация печатной формы Ф103"
+          }
+        },
+        {
+          "name": "Генерация формы Ф7п",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/forms/{{batch_id}}/f7p",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "forms", "{{batch_id}}", "f7p"]
+            },
+            "description": "Генерация печатной формы Ф7п"
+          }
+        },
+        {
+          "name": "Генерация формы Ф112ЭК",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/forms/{{batch_id}}/f112",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "forms", "{{batch_id}}", "f112"]
+            },
+            "description": "Генерация печатной формы Ф112ЭК"
+          }
+        },
+        {
+          "name": "Генерация печатных форм для заказа",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/forms/order/{{order_id}}?print-type=PAPER",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "forms", "order", "{{order_id}}"],
+              "query": [
+                {
+                  "key": "print-type",
+                  "value": "PAPER"
+                }
+              ]
+            },
+            "description": "Генерация печатных форм для заказа"
+          }
+        },
+        {
+          "name": "Отправка электронной формы Ф103",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/shipment/{{batch_id}}/checkin",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "shipment", "{{batch_id}}", "checkin"]
+            },
+            "description": "Подготовка и отправка электронной формы Ф103"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Расчет тарифов",
+      "description": "Методы для расчета стоимости доставки",
+      "item": [
+        {
+          "name": "Расчет стоимости доставки",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"index-from\": 101000,\n  \"index-to\": 190000,\n  \"mail-category\": \"ORDINARY\",\n  \"mail-type\": \"POSTAL_PARCEL\",\n  \"mass\": 1000,\n  \"fragile\": false,\n  \"with-order-of-notice\": false,\n  \"with-simple-notice\": false,\n  \"with-declared-value\": false,\n  \"declared-value\": 0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/tariff",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "tariff"]
+            },
+            "description": "Расчет стоимости и сроков доставки"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Нормализация адресов",
+      "description": "Методы для проверки и нормализации адресов",
+      "item": [
+        {
+          "name": "Нормализация адреса",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"id\": \"1\",\n    \"original-address\": \"Москва, Красная площадь, 1\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/clean/address",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "clean", "address"]
+            },
+            "description": "Проверка и нормализация адреса"
+          }
+        },
+        {
+          "name": "Нормализация ФИО",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"id\": \"1\",\n    \"original-fio\": \"Иванов Иван Иванович\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/clean/fio",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "clean", "fio"]
+            },
+            "description": "Проверка и нормализация ФИО"
+          }
+        },
+        {
+          "name": "Нормализация телефона",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"id\": \"1\",\n    \"original-phone\": \"+7 900 123 45 67\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/clean/phone",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "clean", "phone"]
+            },
+            "description": "Проверка и нормализация номера телефона"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Архив и поиск",
+      "description": "Методы для работы с архивом и поиском",
+      "item": [
+        {
+          "name": "Поиск в архиве",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/archive?page=0&size=10",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "archive"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Поиск отправлений в архиве"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Справочники",
+      "description": "Получение справочной информации",
+      "item": [
+        {
+          "name": "Получение индексов ОПС",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/postoffice?top=100",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "postoffice"],
+              "query": [
+                {
+                  "key": "top",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "Получение списка почтовых отделений"
+          }
+        },
+        {
+          "name": "Получение настроек",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/1.0/settings",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "settings"]
+            },
+            "description": "Получение настроек аккаунта"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Возвраты",
+      "description": "Методы для работы с возвратными отправлениями",
+      "item": [
+        {
+          "name": "Создание возвратного отправления",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original-order-id\": 12345,\n  \"return-reason\": \"Отказ от получения\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/1.0/easy-return",
+              "host": ["{{base_url}}"],
+              "path": ["1.0", "easy-return"]
+            },
+            "description": "Создание возвратного отправления"
+          }
+        }
+      ]
+    }
+  ]
+}
