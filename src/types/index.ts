@@ -2,10 +2,10 @@
  * Configuration interface for PochtaRossiiApi
  */
 export interface PochtaRossiiConfig {
-  /** Authentication token */
-  token: string;
-  /** Authentication key */
-  key: string;
+  /** Authentication token (Authorization header) */
+  Authorization: string;
+  /** Ready-to-use X-User-Authorization header (e.g. 'Basic ...') */
+  'X-User-Authorization': string;
   /** Optional base URL for API requests */
   baseUrl?: string;
 }
@@ -15,45 +15,79 @@ export interface PochtaRossiiConfig {
  */
 export interface Order {
   /** Type of address (DEFAULT, PO_BOX, etc.) */
-  addressTypeTo: string;
+  'address-type-to': string;
   /** Recipient's first name */
-  givenName: string;
+  'given-name': string;
   /** Mail category (SIMPLE, ORDINARY, REGISTERED, WITH_DECLARED_VALUE) */
-  mailCategory: 'SIMPLE' | 'ORDINARY' | 'REGISTERED' | 'WITH_DECLARED_VALUE';
+  'mail-category': 'SIMPLE' | 'ORDINARY' | 'REGISTERED' | 'WITH_DECLARED_VALUE';
   /** Type of mail (POSTAL_PARCEL, ONLINE_PARCEL, etc.) */
-  mailType: 'POSTAL_PARCEL' | 'ONLINE_PARCEL' | 'ONLINE_COURIER' | 'EMS' | 'EMS_OPTIMAL' | 'LETTER' | 'BANDEROL';
+  'mail-type': 'POSTAL_PARCEL' | 'ONLINE_PARCEL' | 'ONLINE_COURIER' | 'EMS' | 'EMS_OPTIMAL' | 'LETTER' | 'BANDEROL';
   /** Weight in grams */
   mass: number;
   /** Unique order number */
-  orderNum: string;
+  'order-num': string;
   /** Full recipient name */
-  recipientName: string;
+  'recipient-name': string;
   /** Postal code as string */
-  strIndexTo: string;
+  'str-index-to': string;
   /** Recipient's phone number */
-  telAddress: string;
+  'tel-address': string;
   /** Postal code as number */
-  indexTo: number;
+  'index-to': number;
   /** Region/State */
-  regionTo: string;
+  'region-to': string;
+  /** Area (optional) */
+  'area-to'?: string;
   /** City/Town */
-  placeTo: string;
+  'place-to': string;
+  /** Location (optional) */
+  'location-to'?: string;
   /** Street name */
-  streetTo: string;
+  'street-to': string;
   /** House number */
-  houseTo: string;
+  'house-to': string;
   /** Room number (optional) */
-  roomTo?: string;
+  'room-to'?: string;
   /** Building number (optional) */
-  corpusTo?: string;
+  'corpus-to'?: string;
   /** Additional building info (optional) */
-  buildingTo?: string;
+  'building-to'?: string;
   /** Hotel name (optional) */
-  hotelTo?: string;
+  'hotel-to'?: string;
   /** Address type number (optional) */
-  numAddressTypeTo?: string;
+  'num-address-type-to'?: string;
   /** Without mail rank flag (optional) */
-  woMailRank?: boolean;
+  'wo-mail-rank'?: boolean;
+  /** Declared value (optional) */
+  'declared-value'?: number;
+  /** Fragile flag (optional) */
+  fragile?: boolean;
+  /** Order of notice flag (optional) */
+  'with-order-of-notice'?: boolean;
+  /** Simple notice flag (optional) */
+  'with-simple-notice'?: boolean;
+  /** Declared value flag (optional) */
+  'with-declared-value'?: boolean;
+  /** Sender's postal code (optional) */
+  'index-from'?: number;
+  /** Sender's region (optional) */
+  'region-from'?: string;
+  /** Sender's city (optional) */
+  'place-from'?: string;
+  /** Sender's street (optional) */
+  'street-from'?: string;
+  /** Sender's house (optional) */
+  'house-from'?: string;
+  /** Sender's building (optional) */
+  'building-from'?: string;
+  /** Sender's corpus (optional) */
+  'corpus-from'?: string;
+  /** Sender's room (optional) */
+  'room-from'?: string;
+  /** Sender's name (optional) */
+  'sender-name'?: string;
+  /** Sender's phone (optional) */
+  'sender-phone'?: string;
 }
 
 /**
@@ -61,25 +95,25 @@ export interface Order {
  */
 export interface TariffRequest {
   /** Sender's postal code */
-  indexFrom: number;
+  'index-from': number;
   /** Recipient's postal code */
-  indexTo: number;
+  'index-to': number;
   /** Mail category */
-  mailCategory: 'SIMPLE' | 'ORDINARY' | 'REGISTERED' | 'WITH_DECLARED_VALUE';
+  'mail-category': 'SIMPLE' | 'ORDINARY' | 'REGISTERED' | 'WITH_DECLARED_VALUE' | 'ORDERED';
   /** Type of mail */
-  mailType: 'POSTAL_PARCEL' | 'ONLINE_PARCEL' | 'ONLINE_COURIER' | 'EMS' | 'EMS_OPTIMAL' | 'LETTER' | 'BANDEROL';
+  'mail-type': 'POSTAL_PARCEL' | 'ONLINE_PARCEL' | 'ONLINE_COURIER' | 'EMS' | 'EMS_OPTIMAL' | 'LETTER' | 'BANDEROL';
   /** Weight in grams */
   mass: number;
   /** Fragile flag */
   fragile: boolean;
   /** Order of notice flag */
-  withOrderOfNotice: boolean;
+  'with-order-of-notice': boolean;
   /** Simple notice flag */
-  withSimpleNotice: boolean;
+  'with-simple-notice': boolean;
   /** Declared value flag */
-  withDeclaredValue: boolean;
+  'with-declared-value': boolean;
   /** Declared value amount */
-  declaredValue: number;
+  'declared-value': number;
 }
 
 /**
@@ -87,18 +121,28 @@ export interface TariffRequest {
  */
 export interface TariffResponse {
   /** Delivery time range in days */
-  deliveryTime: {
+  'delivery-time': {
     /** Minimum delivery time */
     min: number;
     /** Maximum delivery time */
     max: number;
   };
-  /** Total rate amount */
-  totalRate: number;
+  /** Total rate amount (in kopecks) */
+  'total-rate': number;
   /** VAT rate percentage */
-  vatRate: number;
-  /** Total VAT amount */
-  totalVat: number;
+  'vat-rate': number;
+  /** Total VAT amount (in kopecks) */
+  'total-vat': number;
+  /** Weight in grams */
+  weight: number;
+  /** Delivery cost (in kopecks) */
+  'delivery-cost': number;
+  /** Insurance cost (in kopecks) */
+  'insurance-cost': number;
+  /** Notice cost (in kopecks) */
+  'notice-cost': number;
+  /** Total cost (in kopecks) */
+  'total-cost': number;
 }
 
 /**
@@ -108,11 +152,11 @@ export interface NormalizationRequest {
   /** Unique identifier for the request */
   id: string;
   /** Original address to normalize (optional) */
-  originalAddress?: string;
+  'original-address'?: string;
   /** Original FIO to normalize (optional) */
-  originalFio?: string;
+  'original-fio'?: string;
   /** Original phone to normalize (optional) */
-  originalPhone?: string;
+  'original-phone'?: string;
 }
 
 /**
@@ -122,11 +166,11 @@ export interface NormalizationResponse {
   /** Request identifier */
   id: string;
   /** Quality code of normalization */
-  qualityCode: string;
+  'quality-code': string;
   /** Original address (if provided) */
-  originalAddress?: string;
+  'original-address'?: string;
   /** Normalized address details */
-  normalizedAddress?: {
+  'normalized-address'?: {
     /** Postal code */
     index: string;
     /** Region/State */
@@ -149,9 +193,9 @@ export interface NormalizationResponse {
     room: string;
   };
   /** Original FIO (if provided) */
-  originalFio?: string;
+  'original-fio'?: string;
   /** Normalized FIO details */
-  normalizedFio?: {
+  'normalized-fio'?: {
     /** First name */
     name: string;
     /** Last name */
@@ -160,9 +204,9 @@ export interface NormalizationResponse {
     patronymic: string;
   };
   /** Original phone (if provided) */
-  originalPhone?: string;
+  'original-phone'?: string;
   /** Normalized phone number */
-  normalizedPhone?: string;
+  'normalized-phone'?: string;
 }
 
 /**
@@ -170,11 +214,15 @@ export interface NormalizationResponse {
  */
 export interface Batch {
   /** Batch name */
-  batchName: string;
+  'batch-name': string;
   /** Planned sending date (YYYY-MM-DD) */
-  sendingDate: string;
+  'sending-date': string;
   /** Postal office index */
-  shipmentPointIndex: string;
+  'shipment-point-index': string;
+  /** Optional batch description */
+  description?: string;
+  /** Optional batch notes */
+  notes?: string;
 }
 
 /**
@@ -188,4 +236,117 @@ export interface ApiError {
     /** Error description */
     description: string;
   }>;
+}
+
+/**
+ * Interface for post office search by address request
+ */
+export interface PostOfficeAddressRequest {
+  /** Address to search for */
+  address: string;
+  /** Maximum number of results (optional) */
+  top?: number;
+}
+
+/**
+ * Interface for post office search by index request
+ */
+export interface PostOfficeIndexRequest {
+  /** Postal index to search for */
+  index: string;
+}
+
+/**
+ * Interface for post office search by coordinates request
+ */
+export interface PostOfficeCoordinatesRequest {
+  /** Latitude coordinate */
+  latitude: number;
+  /** Longitude coordinate */
+  longitude: number;
+  /** Search radius in meters (optional) */
+  radius?: number;
+  /** Filter type (optional) */
+  filter?: string;
+}
+
+/**
+ * Interface representing a post office
+ */
+export interface PostOffice {
+  /** Post office address source */
+  'address-source'?: string;
+  /** Distance from search point in meters */
+  distance?: number;
+  /** Is closed flag */
+  'is-closed'?: boolean;
+  /** Is private category flag */
+  'is-private-category'?: boolean;
+  /** Is temporarily closed flag */
+  'is-temporary-closed'?: boolean;
+  /** Latitude coordinate */
+  latitude?: number;
+  /** Longitude coordinate */
+  longitude?: number;
+  /** Postal code */
+  'postal-code'?: string;
+  /** Region */
+  region?: string;
+  /** Settlement */
+  settlement?: string;
+  /** Type code */
+  'type-code'?: string;
+  /** Type ID */
+  'type-id'?: number;
+  /** Working hours */
+  'working-hours'?: Array<{
+    /** Day of week */
+    day: number;
+    /** Working hours string */
+    hours: string;
+  }>;
+  /** Works on Saturdays flag */
+  'works-on-saturdays'?: boolean;
+  /** Works on Sundays flag */
+  'works-on-sundays'?: boolean;
+  /** Phone numbers */
+  phones?: Array<{
+    /** Phone number */
+    number: string;
+    /** Phone type */
+    type: string;
+  }>;
+  /** Service groups */
+  'service-groups'?: Array<{
+    /** Service group name */
+    name: string;
+    /** Service group code */
+    code: string;
+  }>;
+  
+  // Legacy fields for backward compatibility
+  /** Post office name (legacy) */
+  name?: string;
+  /** Post office address (legacy) */
+  address?: string;
+  /** Postal index (legacy) */
+  index?: string;
+  /** Phone number (legacy) */
+  phone?: string;
+  /** Working hours (legacy) */
+  workHours?: string;
+  /** Post office type (legacy) */
+  type?: string;
+  /** City (legacy) */
+  city?: string;
+  /** Street (legacy) */
+  street?: string;
+  /** House number (legacy) */
+  house?: string;
+  /** Building number (legacy) */
+  building?: string;
+  /** Corpus number (legacy) */
+  corpus?: string;
+  /** Room number (legacy) */
+  room?: string;
 } 

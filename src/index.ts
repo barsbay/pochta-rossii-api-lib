@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { PochtaRossiiConfig, Order, TariffRequest, TariffResponse, NormalizationRequest, NormalizationResponse, Batch, ApiError } from './types';
+import { PochtaRossiiConfig, Order, TariffRequest, TariffResponse, NormalizationRequest, NormalizationResponse, Batch, ApiError, PostOfficeAddressRequest, PostOfficeIndexRequest, PostOfficeCoordinatesRequest, PostOffice } from './types';
 
 class PochtaRossiiApiError extends Error {
   public status?: number;
@@ -19,6 +19,7 @@ class PochtaRossiiApiError extends Error {
 export class PochtaRossiiApi {
   private readonly client: AxiosInstance;
   private readonly baseUrl: string;
+  private readonly debug: boolean;
 
   /**
    * Creates an instance of PochtaRossiiApi
@@ -26,16 +27,71 @@ export class PochtaRossiiApi {
    */
   constructor(config: PochtaRossiiConfig) {
     this.baseUrl = config.baseUrl || 'https://otpravka-api.pochta.ru';
+    this.debug = process.env.DEBUG === 'true';
+    
     this.client = axios.create({
       baseURL: this.baseUrl,
-      auth: {
-        username: `AccessToken ${config.token}`,
-        password: config.key
-      },
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Authorization': config.Authorization,
+        'X-User-Authorization': `Basic ${config['X-User-Authorization']}`,
+        'Accept-Encoding': 'gzip,deflate',
+        'User-Agent': 'Apache-HttpClient/4.5.5 (Java/17.0.12)'
       }
     });
+
+    // Add request interceptor for logging
+    this.client.interceptors.request.use(
+      (config) => {
+        if (this.debug) {
+          console.log('🚀 Request:', {
+            method: config.method?.toUpperCase(),
+            url: config.url,
+            baseURL: config.baseURL,
+            headers: {
+              ...config.headers,
+              'Authorization': config.headers.Authorization ? config.headers.Authorization : undefined,
+              'X-User-Authorization': config.headers['X-User-Authorization'] ? '***' : undefined
+            },
+            data: config.data
+          });
+        }
+        return config;
+      },
+      (error) => {
+        if (this.debug) {
+          console.error('❌ Request Error:', error);
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    // Add response interceptor for logging
+    this.client.interceptors.response.use(
+      (response) => {
+        if (this.debug) {
+          console.log('✅ Response:', {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+            data: response.data
+          });
+        }
+        return response;
+      },
+      (error) => {
+        if (this.debug) {
+          console.error('❌ Response Error:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            headers: error.response?.headers,
+            data: error.response?.data,
+            message: error.message
+          });
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
   private handleError(error: any) {
@@ -49,25 +105,25 @@ export class PochtaRossiiApi {
   }
 
   private validateOrder(order: Order) {
-    if (!order.orderNum || !order.givenName || !order.mailCategory || !order.mailType || !order.mass || !order.recipientName || !order.strIndexTo || !order.telAddress || !order.indexTo || !order.regionTo || !order.placeTo || !order.streetTo || !order.houseTo) {
+    if (!order['order-num'] || !order['given-name'] || !order['mail-category'] || !order['mail-type'] || !order.mass || !order['recipient-name'] || !order['str-index-to'] || !order['tel-address'] || !order['index-to'] || !order['region-to'] || !order['place-to'] || !order['street-to'] || !order['house-to']) {
       throw new PochtaRossiiApiError('Order validation failed: required fields are missing');
     }
   }
 
   private validateTariffRequest(request: TariffRequest) {
-    if (!request.indexFrom || !request.indexTo || !request.mailCategory || !request.mailType || !request.mass) {
+    if (!request['index-from'] || !request['index-to'] || !request['mail-category'] || !request['mail-type'] || !request.mass) {
       throw new PochtaRossiiApiError('TariffRequest validation failed: required fields are missing');
     }
   }
 
   private validateNormalizationRequest(request: NormalizationRequest) {
-    if (!request.id || (!request.originalAddress && !request.originalFio && !request.originalPhone)) {
-      throw new PochtaRossiiApiError('NormalizationRequest validation failed: id and at least one field (originalAddress, originalFio, originalPhone) are required');
+    if (!request.id || (!request['original-address'] && !request['original-fio'] && !request['original-phone'])) {
+      throw new PochtaRossiiApiError('NormalizationRequest validation failed: id and at least one field (original-address, original-fio, original-phone) are required');
     }
   }
 
   private validateBatch(batch: Batch) {
-    if (!batch.batchName || !batch.sendingDate || !batch.shipmentPointIndex) {
+    if (!batch['batch-name'] || !batch['sending-date'] || !batch['shipment-point-index']) {
       throw new PochtaRossiiApiError('Batch validation failed: required fields are missing');
     }
   }
@@ -131,6 +187,36 @@ export class PochtaRossiiApi {
   }
 
   /**
+   * Updates order by ID
+   * @param {string} orderId - Order ID
+   * @param {Order} order - Updated order details
+   * @returns {Promise<Order>} Updated order
+   */
+  async updateOrder(orderId: string, order: Order): Promise<Order> {
+    this.validateOrder(order);
+    try {
+      const response = await this.client.put(`/1.0/backlog/${orderId}`, order);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
+  }
+
+  /**
+   * Moves order to backlog (shipment to backlog)
+   * @param {string} orderId - Order ID
+   * @returns {Promise<void>}
+   */
+  async moveOrderToBacklog(orderId: string): Promise<void> {
+    try {
+      await this.client.post(`/1.0/backlog/${orderId}`);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
    * Creates a new batch
    * @param {Batch} batch - Batch details
    * @returns {Promise<Batch>} Created batch
@@ -183,7 +269,7 @@ export class PochtaRossiiApi {
    */
   async updateBatchSendingDate(batchId: string, sendingDate: string): Promise<void> {
     try {
-      await this.client.post(`/1.0/shipment/${batchId}/sending-date`, { sendingDate });
+      await this.client.post(`/1.0/shipment/${batchId}/sending-date`, { 'sending-date': sendingDate });
     } catch (error) {
       this.handleError(error);
     }
@@ -363,6 +449,80 @@ export class PochtaRossiiApi {
       this.handleError(error);
     }
     return undefined as any;
+  }
+
+  /**
+   * Search post offices by address
+   * @param {PostOfficeAddressRequest} request - Address search parameters
+   * @returns {Promise<PostOffice[]>} Array of post offices
+   */
+  async searchPostOfficesByAddress(request: PostOfficeAddressRequest): Promise<PostOffice[]> {
+    try {
+      const response = await this.client.get('/postoffice/1.0/by-address', {
+        params: {
+          address: request.address,
+          top: request.top || 10
+        }
+      });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return [];
+  }
+
+  /**
+   * Search post offices by postal index
+   * @param {PostOfficeIndexRequest} request - Index search parameters
+   * @returns {Promise<PostOffice[]>} Array of post offices
+   */
+  async searchPostOfficesByIndex(request: PostOfficeIndexRequest): Promise<PostOffice[]> {
+    try {
+      const response = await this.client.get(`/postoffice/1.0/${request.index}`);
+      return Array.isArray(response.data) ? response.data : [response.data];
+    } catch (error) {
+      this.handleError(error);
+    }
+    return [];
+  }
+
+  /**
+   * Search post offices by coordinates
+   * @param {PostOfficeCoordinatesRequest} request - Coordinates search parameters
+   * @returns {Promise<PostOffice[]>} Array of post offices
+   */
+  async searchPostOfficesByCoordinates(request: PostOfficeCoordinatesRequest): Promise<PostOffice[]> {
+    try {
+      const response = await this.client.get('/postoffice/1.0/nearby', {
+        params: {
+          latitude: request.latitude,
+          longitude: request.longitude,
+          radius: request.radius || 1000,
+          filter: request.filter || 'ALL'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return [];
+  }
+
+  /**
+   * Get all post offices (with optional filters)
+   * @param {number} top - Maximum number of results (default: 100)
+   * @returns {Promise<PostOffice[]>} Array of post offices
+   */
+  async getAllPostOffices(top: number = 100): Promise<PostOffice[]> {
+    try {
+      const response = await this.client.get('/1.0/postoffice', {
+        params: { top }
+      });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return [];
   }
 }
 

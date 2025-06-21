@@ -19,14 +19,18 @@ describe('PochtaRossiiApi', () => {
       put: jest.fn(),
       post: jest.fn(),
       get: jest.fn(),
-      delete: jest.fn()
+      delete: jest.fn(),
+      interceptors: {
+        request: { use: jest.fn() },
+        response: { use: jest.fn() }
+      }
     };
 
     mockedAxios.create.mockReturnValue(mockAxiosInstance);
 
     api = new PochtaRossiiApi({
-      token: 'test-token',
-      key: 'test-key'
+      Authorization: 'test-token',
+      'X-User-Authorization': 'test-key'
     });
   });
 
@@ -39,20 +43,20 @@ describe('PochtaRossiiApi', () => {
      */
     it('should create an order successfully', async () => {
       const mockOrder = {
-        orderNum: '12345',
-        addressTypeTo: 'DEFAULT',
-        givenName: 'Иван',
-        mailCategory: 'ORDINARY' as const,
-        mailType: 'POSTAL_PARCEL' as const,
+        'order-num': '12345',
+        'address-type-to': 'DEFAULT',
+        'given-name': 'Иван',
+        'mail-category': 'ORDINARY' as const,
+        'mail-type': 'POSTAL_PARCEL' as const,
         mass: 1000,
-        recipientName: 'Иванов Иван Иванович',
-        strIndexTo: '101000',
-        telAddress: '+79001234567',
-        indexTo: 101000,
-        regionTo: 'Москва',
-        placeTo: 'Москва',
-        streetTo: 'Красная площадь',
-        houseTo: '1'
+        'recipient-name': 'Иванов Иван Иванович',
+        'str-index-to': '101000',
+        'tel-address': '+79001234567',
+        'index-to': 101000,
+        'region-to': 'Москва',
+        'place-to': 'Москва',
+        'street-to': 'Красная площадь',
+        'house-to': '1'
       };
 
       mockAxiosInstance.put.mockResolvedValue({ data: [mockOrder] });
@@ -72,26 +76,26 @@ describe('PochtaRossiiApi', () => {
      */
     it('should calculate tariff successfully', async () => {
       const mockTariffRequest = {
-        indexFrom: 101000,
-        indexTo: 190000,
-        mailCategory: 'ORDINARY' as const,
-        mailType: 'POSTAL_PARCEL' as const,
+        'index-from': 101000,
+        'index-to': 190000,
+        'mail-category': 'ORDINARY' as const,
+        'mail-type': 'POSTAL_PARCEL' as const,
         mass: 1000,
         fragile: false,
-        withOrderOfNotice: false,
-        withSimpleNotice: false,
-        withDeclaredValue: false,
-        declaredValue: 0
+        'with-order-of-notice': false,
+        'with-simple-notice': false,
+        'with-declared-value': false,
+        'declared-value': 0
       };
 
       const mockTariffResponse = {
-        deliveryTime: {
+        'delivery-time': {
           min: 2,
           max: 5
         },
-        totalRate: 300,
-        vatRate: 20,
-        totalVat: 60
+        'total-rate': 300,
+        'vat-rate': 20,
+        'total-vat': 60
       };
 
       mockAxiosInstance.post.mockResolvedValue({ data: mockTariffResponse });
@@ -112,13 +116,13 @@ describe('PochtaRossiiApi', () => {
     it('should normalize address successfully', async () => {
       const mockRequest = {
         id: '1',
-        originalAddress: 'Москва, Красная площадь, 1'
+        'original-address': 'Москва, Красная площадь, 1'
       };
 
       const mockResponse = {
         id: '1',
-        qualityCode: 'GOOD',
-        normalizedAddress: {
+        'quality-code': 'GOOD',
+        'normalized-address': {
           index: '101000',
           region: 'Москва',
           area: '',

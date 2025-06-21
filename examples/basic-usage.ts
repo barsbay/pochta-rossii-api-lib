@@ -7,8 +7,8 @@ import { PochtaRossiiApi } from '../src';
 async function main() {
   // Initialize API client
   const api = new PochtaRossiiApi({
-    token: 'YOUR_TOKEN',
-    key: 'YOUR_KEY'
+    Authorization: 'YOUR_TOKEN',
+    'X-User-Authorization': 'YOUR_BASE64',
   });
 
   try {
@@ -45,8 +45,7 @@ async function main() {
       withDeclaredValue: false,
       declaredValue: 0
     });
-
-    console.log('Tariff calculation:', tariff);
+    console.log('Tariff:', tariff);
 
     // Example: Normalize address
     const normalizedAddress = await api.normalizeAddress({
@@ -73,7 +72,7 @@ async function main() {
     console.log('Documents package size:', documents.length, 'bytes');
 
   } catch (error) {
-    console.error('Error occurred:', error);
+    console.error('Error:', error);
   }
 }
 
