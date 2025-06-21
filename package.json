@@ -16,7 +16,9 @@
     "coordinates": "ts-node examples/coordinates-test.ts",
     "postoffice": "ts-node examples/postoffice-search.ts",
     "orders": "ts-node examples/orders-test.ts",
-    "tariff": "ts-node examples/tariff-calculation.ts"
+    "tariff": "ts-node examples/tariff-calculation.ts",
+    "count": "ts-node examples/count-request-test.ts",
+    "normalize": "ts-node examples/normalization-test.ts"
   },
   "keywords": [
     "russian-post",

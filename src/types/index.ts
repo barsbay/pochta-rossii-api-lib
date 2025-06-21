@@ -349,4 +349,20 @@ export interface PostOffice {
   corpus?: string;
   /** Room number (legacy) */
   room?: string;
+}
+
+/**
+ * Interface for API request count response
+ */
+export interface CountRequestResponse {
+  /** Total number of requests */
+  total: number;
+  /** Number of requests in current period */
+  current: number;
+  /** Request limit */
+  limit: number;
+  /** Period start date */
+  periodStart?: string;
+  /** Period end date */
+  periodEnd?: string;
 } 

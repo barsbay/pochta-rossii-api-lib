@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { PochtaRossiiConfig, Order, TariffRequest, TariffResponse, NormalizationRequest, NormalizationResponse, Batch, ApiError, PostOfficeAddressRequest, PostOfficeIndexRequest, PostOfficeCoordinatesRequest, PostOffice } from './types';
+import { PochtaRossiiConfig, Order, TariffRequest, TariffResponse, NormalizationRequest, NormalizationResponse, Batch, ApiError, PostOfficeAddressRequest, PostOfficeIndexRequest, PostOfficeCoordinatesRequest, PostOffice, CountRequestResponse } from './types';
 
 class PochtaRossiiApiError extends Error {
   public status?: number;
@@ -523,6 +523,20 @@ export class PochtaRossiiApi {
       this.handleError(error);
     }
     return [];
+  }
+
+  /**
+   * Get API request count statistics
+   * @returns {Promise<CountRequestResponse>} Request count information
+   */
+  async countRequest(): Promise<CountRequestResponse> {
+    try {
+      const response = await this.client.get('/1.0/counter');
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+    return undefined as any;
   }
 }
 
